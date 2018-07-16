@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: monitoring-app
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: monitoringappcontainer
-        image: "gcr.io/cloudkix-209308/k8s-monitoring-app:v13"
+        image: "<your-repo>/<your-image-name>:<version>"
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
