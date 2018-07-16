@@ -40,7 +40,7 @@ $ cd kubernetes
 $ code .
 ```
 
-Change the image name in the monitoring-app-deployment.yaml file.
+Change the image name in the monitoring-app-deployment.yaml file, then:
 
 ```
 $ kubectl apply -f .
