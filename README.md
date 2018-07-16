@@ -47,3 +47,7 @@ $ kubectl apply -f .
 ```
 
 Get the public IP address of the service created. Got to http://service-public-ip/health
+
+## Authorization, RBAC
+
+If your cluster doesn't have RBAC enabled, you don't need the role-binding (kubernetes/role-binding.yaml). The role-binding gives the default service account in the default namespace cluster-admin rights. You might want to change this.
