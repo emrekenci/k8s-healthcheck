@@ -46,4 +46,4 @@ Change the image name in the monitoring-app-deployment.yaml file.
 $ kubectl apply -f .
 ```
 
-Get the public IP address of the service created. Got to <public-ip>/health
+Get the public IP address of the service created. Got to http://service-public-ip/health
