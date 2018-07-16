@@ -3,7 +3,7 @@ A simple app that returns the health statuses of the Kubernetes control-plane co
 
 Once deployed inside a Kubernetes cluster, the app will return the statuses of each K8s Master component and the statuses of each node in the cluster.
 
-GET /health should return:
+GET /health returns the below JSON object:
 
 ```json
 {
@@ -40,7 +40,7 @@ $ cd kubernetes
 $ code .
 ```
 
-Change the image name in the monitoring-app-deployment.yaml file.
+Change the image name in the monitoring-app-deployment.yaml file, then:
 
 ```
 $ kubectl apply -f .
