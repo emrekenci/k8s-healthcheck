@@ -50,11 +50,3 @@ app.get('/health', (req, res) => {
         return res.status(500).send("Something went wrong in the app");
     });
 });
-
-// Returns the results in detail.
-app.get('/status', (req, res) => {
-    appIsUp = !appIsUp;
-    return res.send("New status: " + (appIsUp ? "200" : "500"))
-});
-
-console.log("Hello World!")
