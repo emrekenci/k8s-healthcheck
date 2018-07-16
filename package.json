@@ -1,0 +1,14 @@
+{
+  "name": "monitoring-app",
+  "version": "1.0.0",
+  "description": "Kubernetes cluster healthcheck app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Emre Kenci",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
