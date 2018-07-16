@@ -16,7 +16,7 @@ module.exports = class ComponentStatusMonitor {
                 const bearerToken = fs.readFileSync(bearerTokenDir, 'utf8');
                 const requestOptions = {
                     path: "/api/v1/componentstatuses", // the endpoint to get k8s component statuses
-                    host: 'kubernetes.default.svc', // this is routed to api-server by kube-dns
+                    host: "kubernetes.default.svc", // this is routed to api-server by kube-dns
                     ca: [fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')], // the api-server cert stored by default on each pod
                     rejectUnauthorized: true, // reject the response if we can't validate the ssl cert
                     agent: false,
@@ -40,7 +40,7 @@ module.exports = class ComponentStatusMonitor {
                         var componentStatuses = JSON.parse(body).items;
 
                         componentStatuses.forEach(componentStatus => {
-                            if (componentStatus.metadata.name = "controller-manager") {
+                            if (componentStatus.metadata.name === "controller-manager") {
                                 componentStatus.conditions.forEach(condition => {
                                     if(condition.type === "Healthy") {
                                         result.controllerManagerHealth = condition.status === "True" ? "ok" : "nok"
@@ -48,7 +48,7 @@ module.exports = class ComponentStatusMonitor {
                                 });
                             }
 
-                            if (componentStatus.metadata.name = "scheduler") {
+                            if (componentStatus.metadata.name === "scheduler") {
                                 componentStatus.conditions.forEach(condition => {
                                     if(condition.type === "Healthy") {
                                         result.schedulerHealth = condition.status === "True" ? "ok" : "nok"
