@@ -1,0 +1,46 @@
+# Default values for monitoring-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceaccount: default 
+
+image:
+  repository: ams0/kube-health
+  tag: 0.1
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  targetport: 5000
+  port: 80
+
+ingress:
+  enabled: true
+  annotations: 
+    traefik.frontend.rule.type: PathPrefix
+    traefik.ingress.kubernetes.io/rewrite-target: /health
+  path: /healthz
+  #hosts:
+  #  - chart-example.local
+  #tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

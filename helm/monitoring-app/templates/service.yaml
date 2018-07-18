@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "monitoring-app.fullname" . }}
+  labels:
+    app: {{ template "monitoring-app.name" . }}
+    chart: {{ template "monitoring-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetport }}
+      protocol: TCP
+  selector:
+    app: {{ template "monitoring-app.name" . }}
+    release: {{ .Release.Name }}
