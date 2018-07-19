@@ -7,10 +7,10 @@ GET http://service-public-ip/healthz returns the below JSON object:
 
 ```json
 {
-    "apiServerHealth": "ok",
-    "etcdHealth": "ok",
-    "controllerManagerHealth": "ok",
-    "schedulerHealth": "ok",
+    "apiServer": "ok",
+    "etcd": "ok",
+    "controllerManager": "ok",
+    "scheduler": "ok",
     "nodes": [
         {
             "name": "node-1",
