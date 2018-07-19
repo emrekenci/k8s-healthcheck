@@ -59,16 +59,16 @@ app.get('/healthz', (req, res) => {
 
     apiServerMonitor.getHealth("/healthz").then(apiServerStatus => {
 
-        status.apiServerHealth = apiServerStatus;
+        status.apiServer = apiServerStatus;
 
         apiServerMonitor.getHealth("/healthz/etcd").then(etcdStatus => {
 
-            status.etcdHealth = etcdStatus;
+            status.etcd = etcdStatus;
 
             componentStatusMonitor.getHealth().then(componentsStatus => {
 
-                status.controllerManagerHealth = componentsStatus.controllerManagerHealth;
-                status.schedulerHealth = componentsStatus.schedulerHealth;
+                status.controllerManager = componentsStatus.controllerManagerHealth;
+                status.scheduler = componentsStatus.schedulerHealth;
 
                 nodeMonitor.getHealth().then(nodesResult => {
                     status.nodes = nodesResult;
