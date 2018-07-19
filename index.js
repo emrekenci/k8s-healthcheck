@@ -49,7 +49,15 @@ app.get('/healthz', (req, res) => {
         return res.status(getStatusCode()).send(status);
     }
 
-    status.lastCheckAt = new Date()
+    // Clear cached results
+    status = {
+        apiServer: "unknown",
+        etcd: "unknown",
+        controllerManager: "unknown",
+        scheduler: "unknown",
+        nodes: [],
+        lastCheckAt: now
+    }
 
     var apiServerMonitor = new ApiServerMonitor();
 
