@@ -25,10 +25,10 @@ app.listen(port, () => {
 });
 
 var status = {
-    apiServerHealth: "unknown",
-    etcdHealth: "unknown",
-    controllerManagerHealth: "unknown",
-    schedulerHealth: "unknown",
+    apiServer: "unknown",
+    etcd: "unknown",
+    controllerManager: "unknown",
+    scheduler: "unknown",
     nodes: [],
     lastCheckAt: new Date(1970)
 }
