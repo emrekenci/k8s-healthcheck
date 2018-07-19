@@ -46,7 +46,7 @@ app.get('/healthz', (req, res) => {
     var timeSinceLastCheck = now - status.lastCheckAt;
 
     if (!(timeSinceLastCheck > cacheDuration * 1000)) {
-        return res.status(200).send(status);
+        return res.status(getStatusCode()).send(status);
     }
 
     status.lastCheckAt = new Date()
@@ -72,8 +72,7 @@ app.get('/healthz', (req, res) => {
 
                 nodeMonitor.getHealth().then(nodesResult => {
                     status.nodes = nodesResult;
-                    var statusCode = getStatusCode();
-                    return res.status(statusCode).send(status);
+                    return res.status(getStatusCode()).send(status);
                 })
             })
         })
