@@ -36,10 +36,36 @@ module.exports = class NodeMonitor {
 
                         var nodes = JSON.parse(body).items;
                         nodes.forEach(node => {
-                            result.push({
-                                name: node.metadata.name,
-                                status: node.status.conditions
-                            });
+
+                            var nodeStatus = "ok";
+                            var problems = [];
+
+                            node.status.conditions.forEach(condition => {
+                                if(condition.type !== "Ready") {
+                                    if(condition.status !== "False") {
+                                        nodeStatus = "nok";
+                                        problems.push(condition)
+                                    }
+                                } else {
+                                    if(condition.status !== "True") {
+                                        nodeStatus = "nok";
+                                        problems.push(condition)
+                                    }
+                                }
+                            })
+
+                            if(problems.length == 0) {
+                                result.push({
+                                    name: node.metadata.name,
+                                    status: nodeStatus,
+                                });
+                            } else {
+                                result.push({
+                                    name: node.metadata.name,
+                                    status: nodeStatus,
+                                    problems: problems
+                                });
+                            }
                         });
 
                         return resolve(result);
