@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monitoring-app-ingress
+  annotations:
+    traefik.frontend.rule.type: PathPrefix
+    traefik.ingress.kubernetes.io/rewrite-target: /health
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /healthz
+        backend:
+          serviceName: monitoring-app-service
+          servicePort: 80
