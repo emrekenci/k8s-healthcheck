@@ -1,4 +1,4 @@
-# k8s-monitoring-app
+# k8s-healthcheck
 A simple app that returns the health statuses of the Kubernetes control-plane components and cluster nodes.
 
 Once deployed inside a Kubernetes cluster, the app will return the statuses of each K8s Master component and the statuses of each node in the cluster.
@@ -28,11 +28,23 @@ GET http://service-public-ip/healthz returns the below JSON object:
     "lastCheckAt": "2018-07-19T20:19:10.308Z"
 }
 ```
-## About the results
+## Results
 
-The response status code will be 200 if everything is ok. It will be 500 if there is any issue with either one of the master components or any nodes. The result JSON object will be in the response body in either case.
+The result of a healthcheck is the json body as shown above and the status code.
 
-The node results will contain an array element called "problems" if there is any problematic condition with the node.
+### 200, everything is ok
+
+If everything we're checking is "ok" then the response status code will be 200.
+
+### 502, somethings in the cluster are not right
+
+If any item we're checking is "nok" then the response status code will be 502 (Bad Gateway). The body will contain the json object as shown above which will show you what's wrong.
+
+The "node" object in the result will contain an array element called "problems" if there is any problematic condition with the node.
+
+### 500, the app is throwing errors
+
+This will tell you that the healthcheck app itself is throwing some errors. This might still show a health issue with the cluster but it's likely a configuration issue or a bug in the code.
 
 ## Building the app
 
@@ -54,6 +66,16 @@ Get the public IP address of the service created. Got to http://service-public-i
 ## Configuration
 
 The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contans these.
+
+## Testing locally
+
+If you want to connect the app to your remote K8s cluster while debugging the app, set the NODE_ENV variable to "local" and the do a 
+
+```
+$ kubectl proxy port=8001
+```
+
+And run the app.
 
 ## Caching
 
