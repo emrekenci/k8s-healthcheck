@@ -106,6 +106,7 @@ function getMonitorStatuses() {
     });
 }
 
+// Check the status of each monitor and decide whether to return 200 or 502
 function getStatusCode() {
     for (var property in status) {
         if (status.hasOwnProperty(property)) {
@@ -116,10 +117,12 @@ function getStatusCode() {
                     }
                 })
             } else {
-                if (status[property] !== "ok") {
+                if (status[property] !== "ok" && property !== "lastCheckAt") {
                     return 502
                 }
             }
         }
     }
+
+    return 200;
 }
