@@ -106,17 +106,20 @@ function getMonitorStatuses() {
     });
 }
 
-// TODO: This is still based on hardcoded monitor names.
 function getStatusCode() {
-    if (status.apiServerHealth !== "ok" || status.etcdHealth !== "ok" || status.etcdHealth !== "ok" || status.controllerManagerHealth !== "ok") {
-        return 502;
-    }
-
-    status.nodes.forEach(node => {
-        if (node.status !== "ok") {
-            return 502;
+    for (var property in status) {
+        if (status.hasOwnProperty(property)) {
+            if (Object.prototype.toString.call(status[property]) === '[object Array]') {
+                status[property].forEach(value => {
+                    if (value.status !== "ok") {
+                        return 502
+                    }
+                })
+            } else {
+                if (status[property] !== "ok") {
+                    return 502
+                }
+            }
         }
-    })
-
-    return 200;
+    }
 }
