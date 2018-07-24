@@ -69,13 +69,13 @@ The app is configured to use basic auth. You have to set the USERNAME and PASSWO
 
 ## Testing locally
 
-If you want to connect the app to your remote K8s cluster while debugging the app, set the NODE_ENV variable to "local" and the do a 
+If you want to connect the app to your remote K8s cluster while debugging the app, set the NODE_ENV variable to "local" and then: 
 
 ```
 $ kubectl proxy port=8001
 ```
 
-And run the app.
+...and run the app. It will give you the healthcheck of your remote K8s cluster on localhost:5000/healthz
 
 ## Caching
 
