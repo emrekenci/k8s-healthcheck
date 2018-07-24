@@ -2,8 +2,10 @@ const express = require('express');
 const app = express();
 const port = 5000;
 const ApiServerMonitor = require("./monitors/api-server-monitor")
-const ComponentStatusMonitor = require("./monitors/component-status-monitor")
-const NodeMonitor = require("./monitors/node-monitor")
+const EtcdMonitor = require("./monitors/etcd-monitor")
+const ControllerManagerMonitor = require("./monitors/controller-manager-monitor")
+const SchedulerMonitor = require("./monitors/scheduler-monitor")
+const NodesMonitor = require("./monitors/nodes-monitor")
 const basicAuth = require('basic-auth-connect');
 
 app.use(express.json())
@@ -24,80 +26,95 @@ app.listen(port, () => {
     console.log("All good... Listening on port: " + port);
 });
 
-var status = {
-    apiServer: "unknown",
-    etcd: "unknown",
-    controllerManager: "unknown",
-    scheduler: "unknown",
-    nodes: [],
-    lastCheckAt: new Date(1970)
-}
-
 // The duration which we'll serve the results from memory. Default = 30 seconds
 var cacheDuration = 30;
 if (process.env.CACHE_DURATION_IN_SECONDS) {
     cacheDuration = parseInt(process.env.CACHE_DURATION_IN_SECONDS);
 }
 
-app.get('/healthz', (req, res) => {
+var monitors = [
+    new ApiServerMonitor(),
+    new EtcdMonitor(),
+    new ControllerManagerMonitor(),
+    new SchedulerMonitor(),
+    new NodesMonitor(),
+]
 
-    var now = new Date();
+var status = {};
+var statusCode = 200;
+var lastCheckAt = new Date();
 
-    var timeSinceLastCheck = now - status.lastCheckAt;
-
-    if (!(timeSinceLastCheck > cacheDuration * 1000)) {
-        return res.status(getStatusCode()).send(status);
-    }
-
-    // Clear cached results
-    status = {
-        apiServer: "unknown",
-        etcd: "unknown",
-        controllerManager: "unknown",
-        scheduler: "unknown",
-        nodes: [],
-        lastCheckAt: now
-    }
-
-    var apiServerMonitor = new ApiServerMonitor();
-
-    var componentStatusMonitor = new ComponentStatusMonitor();
-
-    var nodeMonitor = new NodeMonitor();
-
-    apiServerMonitor.getHealth("/healthz").then(apiServerStatus => {
-
-        status.apiServer = apiServerStatus;
-
-        apiServerMonitor.getHealth("/healthz/etcd").then(etcdStatus => {
-
-            status.etcd = etcdStatus;
-
-            componentStatusMonitor.getHealth().then(componentsStatus => {
-
-                status.controllerManager = componentsStatus.controllerManagerHealth;
-                status.scheduler = componentsStatus.schedulerHealth;
-
-                nodeMonitor.getHealth().then(nodesResult => {
-                    status.nodes = nodesResult;
-                    return res.status(getStatusCode()).send(status);
-                })
-            })
-        })
-    }).catch(error => {
-        console.log(error);
-        return res.status(500).send("Something went wrong in the app");
-    });
+getMonitorStatuses().then(result => {
+    status = result;
+    status.lastCheckAt = lastCheckAt;
+    statusCode = getStatusCode();
+}).catch(() => {
+    // By convention, we are only rejecting in monitors if there is an exception.
+    // All handled/expected errors are logged but not rejected.
+    // This is to be able to differentiate between when there is a problem with the monitor app itself or when 
+    // there is an issue with a component.
+    console.log("Initial check failed.");
 });
 
+app.get('/healthz', (req, res) => {
+    try {
+
+        var now = new Date();
+        var timeSinceLastCheck = now - lastCheckAt;
+
+        if (!(timeSinceLastCheck > cacheDuration * 1000)) {
+            return res.status(statusCode).send(status);
+        }
+
+        return getMonitorStatuses().then(result => {
+
+            status = result;
+            statusCode = getStatusCode();
+
+            lastCheckAt = new Date();
+            status.lastCheckAt = lastCheckAt;
+
+            return res.status(statusCode).send(status);
+
+        }).catch(() => {
+            return res.status(500).send("Something went wrong in the app. Check the logs.");
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send("Something went wrong in the app. Check the logs.");
+    }
+});
+
+function getMonitorStatuses() {
+    var healthCheckActions = [];
+
+    monitors.forEach(monitor => {
+        healthCheckActions.push(monitor.getHealth());
+    })
+
+    return Promise.all(healthCheckActions).then(healthCheckResults => {
+
+        var i;
+        var result = {};
+
+        for (i = 0; i < healthCheckResults.length; i++) {
+            result[healthCheckResults[i].resultPropertyName] = healthCheckResults[i].status;
+        }
+
+        return result;
+    });
+}
+
+// TODO: This is still based on hardcoded monitor names.
 function getStatusCode() {
-    if(status.apiServerHealth !== "ok" || status.etcdHealth !== "ok" || status.etcdHealth !== "ok" || status.controllerManagerHealth !== "ok") {
-        return 500;
+    if (status.apiServerHealth !== "ok" || status.etcdHealth !== "ok" || status.etcdHealth !== "ok" || status.controllerManagerHealth !== "ok") {
+        return 502;
     }
 
-    status.nodes.forEach(node=> {
-        if(node.status !== "ok") {
-            return 500;
+    status.nodes.forEach(node => {
+        if (node.status !== "ok") {
+            return 502;
         }
     })
 

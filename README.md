@@ -53,7 +53,7 @@ Get the public IP address of the service created. Got to http://service-public-i
 
 ## Configuration
 
-The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contans this.
+The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contans these.
 
 ## Caching
 

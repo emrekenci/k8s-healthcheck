@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: monitoring-app
+  name: healthcheck-app
 spec:
   selector:
     matchLabels:
-      app: monitoring-app
+      app: healthcheck-app
   replicas: 1
   template:
     metadata:
       labels:
-        app: monitoring-app
+        app: healthcheck-app
     spec:
       containers:
-      - name: monitoringappcontainer
-        image: "<your-repo>/<your-image-name>:<version>"
+      - name: healthcheckappcontainer
+        image: "<your-image>"
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
@@ -25,3 +25,5 @@ spec:
             value: "password"
           - name: "CACHE_DURATION_IN_SECONDS"
             value: "30"
+          - name: "NODE_ENV"
+            value: "production"
