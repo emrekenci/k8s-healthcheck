@@ -79,7 +79,7 @@ $ kubectl proxy port=8001
 
 ## Caching
 
-The results are stored in memory for 30 seonds by default to prevent abuse & choking the K8s api server. You can change the cache duraction by setting the CACHE_DURATION_IN_SECONDS environment variable.
+The results are stored in memory for 30 seonds by default to prevent abuse & choking the K8s api server. You can change the cache duration by setting the CACHE_DURATION_IN_SECONDS environment variable.
 
 ## Authorization, RBAC
 
