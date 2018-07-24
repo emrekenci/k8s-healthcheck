@@ -40,7 +40,7 @@ If everything we're checking is "ok" then the response status code will be 200.
 
 If any item we're checking is "nok" then the response status code will be 502 (Bad Gateway). The body will contain the json object as shown above which will show you what's wrong.
 
-The "node" object in the result will contain an array element called "problems" if there is any problematic condition with the node.
+If there is an issue with one of the nodes, the "node" object in the result will contain an array called "problems" containing the details of the issue as reported by the k8s api-server.
 
 ### 500, the app is throwing errors
 
