@@ -121,3 +121,15 @@ The value must be string deliminated. Add the property name you want to exclude 
 ## Authorization, RBAC
 
 If your cluster doesn't have RBAC enabled, you don't need the role-binding (kubernetes/role-binding.yaml). The role-binding gives the default service account in the default namespace cluster-admin rights. You might want to change this.
+
+## Running on managed clusters (AKS, GKE, EKS)
+
+The app will run without any issues on GKE and EKS.
+
+AKS clusters do not expose the healthcheck endpoints of controller-manager and scheduler components. To use on AKS you need to exclude these by configuration.
+
+```
+"EXCLUDE": "controllerManager,scheduler"
+```
+
+
