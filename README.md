@@ -1,5 +1,5 @@
 # k8s-healthcheck
-A simple app that returns the health statuses of the Kubernetes control-plane components and cluster nodes.
+A simple app that returns the health statuses of the Kubernetes control-plane components, cluster nodes and your deployments.
 
 Once deployed inside a Kubernetes cluster, the app will return the statuses of each K8s Master component and the statuses of each node in the cluster.
 
@@ -25,6 +25,12 @@ GET http://service-public-ip/healthz returns the below JSON object:
             "status": "ok"
         }
     ],
+    "deployments": [
+        {
+            "name": "healthcheck-app",
+            "status": "ok"
+        }
+    ],
     "lastCheckAt": "2018-07-19T20:19:10.308Z"
 }
 ```
@@ -41,6 +47,8 @@ If everything we're checking is "ok" then the response status code will be 200.
 If any item we're checking is "nok" then the response status code will be 502 (Bad Gateway). The body will contain the json object as shown above which will show you what's wrong.
 
 If there is an issue with one of the nodes, the "node" object in the result will contain an array called "problems" containing the details of the issue as reported by the k8s api-server.
+
+Likewise, the "deployment" object in the result will contain the condition of the deployment if it's "nok". The app is checking both "Available" and "Progressing" conditions of a [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) and will report "nok" if either one is false.
 
 ### 500, the app is throwing errors
 
@@ -65,9 +73,28 @@ Get the public IP address of the service created. Got to http://service-public-i
 
 ## Configuration
 
+Sample config file for the app:
+
+``` json
+"env": {
+    "USERNAME": "admin",
+    "PASSWORD": "password",
+    "CACHE_DURATION_IN_SECONDS": "10",
+    "NODE_ENV": "production",
+    "DEPLOYMENTS_NAMESPACE": "default",
+    "EXCLUDE": ""
+}
+```
+
+### API Authorization
+
 The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contans these.
 
-## Testing locally
+### Caching
+
+The results are stored in memory for 30 seonds by default to prevent abuse & choking the K8s api server. You can change the cache duration by setting the CACHE_DURATION_IN_SECONDS environment variable.
+
+### Testing locally
 
 If you want to connect the app to your remote K8s cluster while debugging the app, set the NODE_ENV variable to "local" and then: 
 
@@ -77,9 +104,19 @@ $ kubectl proxy port=8001
 
 ...and run the app. It will give you the healthcheck of your remote K8s cluster on localhost:5000/healthz
 
-## Caching
+### Deployment namespaces
 
-The results are stored in memory for 30 seonds by default to prevent abuse & choking the K8s api server. You can change the cache duration by setting the CACHE_DURATION_IN_SECONDS environment variable.
+The app will get the status of the deployments in the "default" namespace by default. If you want to monitor the status of the deployments in another namespace, you need to provide it to the app via the DEPLOYMENTS_NAMESPACE environment variable.
+
+### Excluding some checks
+
+You can make the app "not" check some items and exclude them from the result by configuration. To do this, use EXCLUDE environment variable.
+
+The value must be string deliminated. Add the property name you want to exclude as you see it in the result json.
+
+```
+"EXCLUDE": "apiServer,etcd,controllerManager,scheduler,nodes,deployments"
+```
 
 ## Authorization, RBAC
 
