@@ -27,3 +27,8 @@ spec:
             value: "30"
           - name: "NODE_ENV"
             value: "production"
+          # Use this to exclude some monitors from the result. Must be string deliminated. 
+          # Add the property name as you see in the result json .
+          # Ex: "apiServer,etcd,controllerManager,scheduler,nodes,deployments"
+          - name: "EXCLUDE"
+            value: ""

@@ -1,44 +1,95 @@
-const https = require('https')
-var fs = require("fs");
+const BaseMonitor = require("../monitors/base-monitor")
 
-// 
-module.exports = class DeploymentsMonitor {
+// Get the health status of the deployments in the cluster
+module.exports = class DeploymentsMonitor extends BaseMonitor {
 
     constructor() {
+        super();
+        
         this.resultPropertyName = "deployments";
+
+        // Check the deployments in the namespace provided in the config file.
+        // If nothing is provided, then use the defaul namespace. 
+        var namespace = process.env.DEPLOYMENTS_NAMESPACE ? process.env.DEPLOYMENTS_NAMESPACE : "default"
+        this.requestOptions.path = "/apis/apps/v1/namespaces/" + namespace + "/deployments/";
     }
 
     getHealth() {
         return new Promise(function (resolve, reject) {
+
+            var result = {
+                resultPropertyName: this.resultPropertyName,
+                status: "unknown"
+            };
+
             try {
+                var req = this.httpClient.request(this.requestOptions, function (res) {
 
-                var namespace = process.env.DEPLOYMENTS_NAMESPACE ? process.env.DEPLOYMENTS_NAMESPACE : "default"
+                    var body = "";
 
-                const bearerTokenDir = "/var/run/secrets/kubernetes.io/serviceaccount/token";
+                    res.on('data', function (chunk) {
+                        body += chunk;
+                    });
 
-                const bearerToken = fs.readFileSync(bearerTokenDir, 'utf8');
+                    res.on('end', function () {
+                        try {
+                            if (res.statusCode !== 200 || body == null) {
+                                console.error("Couldn't get deployments. Response status code: " + res.statusCode + " response body: " + body);
+                                return resolve(result);
+                            }
 
-                const requestOptions = {
-                    path: "/apis/apps/v1/namespaces/" + namespace + "/deployments/", // api-server health endpoint.
-                    host: 'kubernetes', // this is routed to api-server by kube-dns.
-                    ca: [fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')], // the api-server cert stored by default on each pod
-                    rejectUnauthorized: true, // reject the response if we can't validate the ssl cert.
-                    agent: false,
-                    headers: { 'Authorization': "Bearer " + bearerToken }
-                };
+                            result.status = [];
 
-                var req = https.request(requestOptions, function (res) {
-                    if (res.statusCode !== 200) {
-                        return resolve(false);
-                    } else {
-                        return resolve(true);
-                    }
+                            var deployments = JSON.parse(body).items;
+                            deployments.forEach(deployment => {
+
+                                var deploymentStatus = "ok";
+                                var problems = [];
+
+                                deployment.status.conditions.forEach(condition => {
+                                    if (condition.type === "Available") {
+                                        if (condition.status !== "True") {
+                                            deploymentStatus = "nok";
+                                            problems.push(condition)
+                                        }
+                                    } else if (condition.type === "Progressing") {
+                                        if (condition.status !== "True") {
+                                            deploymentStatus = "nok";
+                                            problems.push(condition)
+                                        }
+                                    } else {
+                                        console.error("Unknown condition type in deployment monitor."+
+                                        " Deployment name: " + deployment.metadata.name +
+                                        " Condition type: " + condition.type)
+                                    }
+                                })
+
+                                if (problems.length == 0) {
+                                    result.status.push({
+                                        name: deployment.metadata.name,
+                                        status: deploymentStatus,
+                                    });
+                                } else {
+                                    result.status.push({
+                                        name: deployment.metadata.name,
+                                        status: deploymentStatus,
+                                        problems: problems
+                                    });
+                                }
+                            });
+
+                            return resolve(result);
+                        } catch (error) {
+                            console.error(error);
+                            return reject(result);
+                        }
+                    });
                 });
 
                 // on request error, reject
                 req.on('error', function (err) {
-                    console.error(err);
-                    return resolve(false);
+                    console.error("Received error making a request to: /api/v1/nodes/");
+                    return resolve(result);
                 });
 
                 // if there's post data, write it to the request
@@ -46,7 +97,7 @@ module.exports = class DeploymentsMonitor {
             }
             catch (err) {
                 console.error(err);
-                return resolve(false);
+                return reject(result);
             }
         }.bind(this));
     }

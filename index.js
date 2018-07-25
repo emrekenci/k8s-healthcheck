@@ -1,14 +1,20 @@
 const express = require('express');
 const app = express();
 const port = 5000;
+const basicAuth = require('basic-auth-connect');
+
+app.use(express.json())
+app.use(basicAuth(process.env.USERNAME, process.env.PASSWORD));
+app.listen(port, () => {
+    console.log("App is starting. Listening on port: " + port);
+});
+
 const ApiServerMonitor = require("./monitors/api-server-monitor")
 const EtcdMonitor = require("./monitors/etcd-monitor")
 const ControllerManagerMonitor = require("./monitors/controller-manager-monitor")
 const SchedulerMonitor = require("./monitors/scheduler-monitor")
 const NodesMonitor = require("./monitors/nodes-monitor")
-const basicAuth = require('basic-auth-connect');
-
-app.use(express.json())
+const DeploymentsMonitor = require("./monitors/deployments-monitor")
 
 if (!process.env.USERNAME) {
     console.error("USERNAME environment variable must be set")
@@ -20,30 +26,30 @@ if (!process.env.PASSWORD) {
     process.exit(-1);
 }
 
-app.use(basicAuth(process.env.USERNAME, process.env.PASSWORD));
-
-app.listen(port, () => {
-    console.log("All good... Listening on port: " + port);
-});
-
 // The duration which we'll serve the results from memory. Default = 30 seconds
 var cacheDuration = 30;
 if (process.env.CACHE_DURATION_IN_SECONDS) {
     cacheDuration = parseInt(process.env.CACHE_DURATION_IN_SECONDS);
 }
 
+// All available monitors.
+// If you want to write a new monitor, you need to add it to this array.
 var monitors = [
     new ApiServerMonitor(),
     new EtcdMonitor(),
     new ControllerManagerMonitor(),
     new SchedulerMonitor(),
     new NodesMonitor(),
+    new DeploymentsMonitor()
 ]
+
+var excludedMonitorts = getExcludedMonitors();
 
 var status = {};
 var statusCode = 200;
 var lastCheckAt = new Date();
 
+// Run an initial check on all monitors on app-start
 getMonitorStatuses().then(result => {
     status = result;
     status.lastCheckAt = lastCheckAt;
@@ -56,6 +62,7 @@ getMonitorStatuses().then(result => {
     console.log("Initial check failed.");
 });
 
+// The healthcheck endpoint
 app.get('/healthz', (req, res) => {
     try {
 
@@ -86,11 +93,14 @@ app.get('/healthz', (req, res) => {
     }
 });
 
+// Run the getHealth() method on each un-excluded monitor and construct the result
 function getMonitorStatuses() {
     var healthCheckActions = [];
 
     monitors.forEach(monitor => {
-        healthCheckActions.push(monitor.getHealth());
+        if(!excludedMonitorts.includes(monitor.resultPropertyName)) {
+            healthCheckActions.push(monitor.getHealth());
+        }
     })
 
     return Promise.all(healthCheckActions).then(healthCheckResults => {
@@ -125,4 +135,36 @@ function getStatusCode() {
     }
 
     return 200;
+}
+
+// Users can exclude some monitors from the results using the EXCLUDE env variable
+function getExcludedMonitors() {
+    
+    var validMonitorNames = [];
+
+    monitors.forEach(monitor => {
+        validMonitorNames.push(monitor.resultPropertyName);
+    })
+    
+    if(process.env.EXCLUDE) {
+        var excludedMonitorNames = process.env.EXCLUDE.split(',');
+        if(excludedMonitorNames.length !== 0) {
+            excludedMonitorNames.forEach(monitorName => {
+                if(!validMonitorNames.includes(monitorName)) {
+                    console.error("Provided monitor name for exclusion: '" + monitorName + "' is invalid. Valid monitor names you can exclude are: " 
+                    + validMonitorNames.toString() + " case sensitive.")
+                    process.exit(-1);
+                }
+            })
+
+            if(excludedMonitorNames.length === monitors.length) {
+                console.error("You excluded every monitor from the result. So what's the point in running the app?")
+                process.exit(-1);
+            }
+
+            return excludedMonitorNames;
+        }
+    }
+
+    return [];
 }

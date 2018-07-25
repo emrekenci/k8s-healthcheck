@@ -13,7 +13,8 @@
                 "USERNAME": "admin",
                 "PASSWORD": "password",
                 "CACHE_DURATION_IN_SECONDS": "10",
-                "NODE_ENV": "local"
+                "NODE_ENV": "local",
+                "EXCLUDE": ""
             }
         }
     ]
