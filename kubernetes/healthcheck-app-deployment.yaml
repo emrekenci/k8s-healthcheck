@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: healthcheckappcontainer
-        image: "<your-image>"
+        image: "emrekenci/k8s-healthcheck:v1"
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
@@ -32,3 +32,5 @@ spec:
           # Ex: "apiServer,etcd,controllerManager,scheduler,nodes,deployments"
           - name: "EXCLUDE"
             value: ""
+          - name: "DEPLOYMENTS_NAMESPACE"
+            value: "default"

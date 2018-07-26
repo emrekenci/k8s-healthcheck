@@ -54,18 +54,11 @@ Likewise, the "deployment" object in the result will contain the condition of th
 
 This will tell you that the healthcheck app itself is throwing some errors. This might still show a health issue with the cluster but it's likely a configuration issue or a bug in the code.
 
-## Building the app
+## Deploying the app
 
 ```
-$ docker build -t <your-repo>/<your-image-name>:<version> .
-$ docker push <your-repo>/<your-image-name>:<version>
-$ cd kubernetes
-$ code .
-```
-
-Change the image name in the monitoring-app-deployment.yaml file, then:
-
-```
+$ git clone https://github.com/emrekenci/k8s-healthcheck
+$ cd .\k8s-healthcheck\kubernetes
 $ kubectl apply -f .
 ```
 
