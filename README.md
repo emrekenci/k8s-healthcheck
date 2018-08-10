@@ -81,7 +81,7 @@ Sample config file for the app:
 
 ### API Authorization
 
-The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contans these.
+The app is configured to use basic auth. You have to set the USERNAME and PASSWORD environment variables. Kubernetes deployment config file already contains these.
 
 ### Caching
 
