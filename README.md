@@ -105,7 +105,7 @@ The app will get the status of the deployments in the "default" namespace by def
 
 You can make the app "not" check some items and exclude them from the result by configuration. To do this, use the EXCLUDE environment variable.
 
-The value must be string deliminated. Add the property name you want to exclude as you see it in the result json.
+Add the property name you want to exclude as you see it in the result json, comma delimited.
 
 ```
 "EXCLUDE": "apiServer,etcd,controllerManager,scheduler,nodes,deployments"
