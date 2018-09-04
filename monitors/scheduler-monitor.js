@@ -1,6 +1,6 @@
 const ControllerManagerMonitor = require("../monitors/controller-manager-monitor")
 
-// For monitoring controller manager, scheduler and 
+// For monitoring scheduler
 module.exports = class SchedulerMonitor extends ControllerManagerMonitor {
     
     constructor() {

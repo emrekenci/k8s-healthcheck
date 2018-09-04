@@ -1,6 +1,6 @@
 const BaseMonitor = require("../monitors/base-monitor")
 
-// For monitoring controller manager and scheduler and 
+// For monitoring controller manager
 module.exports = class ControllerManagerMonitor extends BaseMonitor {
 
     constructor() {
@@ -58,63 +58,6 @@ module.exports = class ControllerManagerMonitor extends BaseMonitor {
                 });
 
                 req.end()
-            }
-            catch (err) {
-                console.error(err);
-                return reject(result);
-            }
-        }.bind(this));
-    }
-
-    getHealth2() {
-        return new Promise(function (resolve, reject) {
-            var result = {
-                resultPropertyName: this.resultPropertyName,
-                status: "unknown",
-            }
-
-            try{
-                var req = this.httpClient.request(this.requestOptions, function (res) {
-                    var body = "";
-
-                    res.on('data', function (chunk) {
-                        body += chunk;
-                    });
-
-                    res.on('end', function () {
-                        try {
-                            if (res.statusCode !== 200 || body == null) {
-                                console.error("Couldn't get component statuses. Response status code: " + res.statusCode + " response body: " + body);
-                                return resolve(result);
-                            }
-
-                            var componentStatuses = JSON.parse(body).items;
-                            componentStatuses.forEach(componentStatus => {
-                                if (componentStatus.metadata.name === this.componentName) {
-                                    componentStatus.conditions.forEach(condition => {
-                                        if (condition.type === "Healthy") {
-                                            result.status = condition.status === "True" ? "ok" : "nok"
-                                        }
-                                    });
-                                }
-                            });
-
-                            return resolve(result);
-                        } catch (error) {
-                            console.error(error);
-                            return reject(result);
-                        }
-                    });
-
-                    // on request error, reject
-                    req.on('error', function (err) {
-                        console.error("Received error making a request to: /api/v1/componentstatuses");
-                        return resolve(result);
-                    });
-
-                    // if there's post data, write it to the request
-                    req.end();
-                }.bind(this));
             }
             catch (err) {
                 console.error(err);

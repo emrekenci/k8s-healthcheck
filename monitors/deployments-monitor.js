@@ -1,6 +1,6 @@
 const BaseMonitor = require("../monitors/base-monitor")
 
-// Get the health status of the deployments in the cluster
+// Get the health status of deployments in the cluster
 module.exports = class DeploymentsMonitor extends BaseMonitor {
 
     constructor() {
