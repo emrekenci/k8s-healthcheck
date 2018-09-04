@@ -1,7 +1,7 @@
 # k8s-healthcheck
-A simple app that returns the health statuses of the Kubernetes control-plane components, cluster nodes and your deployments.
+A simple app that returns the health statuses of the Kubernetes control-plane components, cluster nodes, and your deployments.
 
-Once deployed inside a Kubernetes cluster, the app will return the statuses of each K8s Master component and the statuses of each node in the cluster.
+Once deployed inside a Kubernetes cluster, the app will return the statuses of each K8s Master component, the statuses of each node in the cluster, and the status of your deployments.
 
 GET http://service-public-ip/healthz returns the below JSON object:
 
